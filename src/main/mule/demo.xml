@@ -9,6 +9,6 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	</http:listener-config>
 	<flow name="demoFlow" doc:id="828c7630-d5ff-4fc0-9d70-80e066c3cd0b" >
 		<http:listener doc:name="Listener" doc:id="95d984bd-44d0-43ce-82be-f9e1de3828c0" config-ref="HTTP_Listener_config" path="/path"/>
-		<logger level="INFO" doc:name="Logger" doc:id="24348c9e-7c95-417d-988a-9715bf1d5a7a" message="log has been chaged from studio"/>
+		<logger level="INFO" doc:name="Logger" doc:id="24348c9e-7c95-417d-988a-9715bf1d5a7a" message="log chaged from github"/>
 	</flow>
 </mule>
