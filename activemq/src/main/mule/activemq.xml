@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="02ccdf96-3857-42aa-99d9-43f66e0099e5" >
+		<jms:active-mq-connection username="admin" password="admin">
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c71d8e8e-24a1-4c2c-9cd2-33f99fbcbd18" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="41d1b115-1191-4b29-a82b-97aef3c4b866" >
+		<http:request-connection port="8081" host="localhost"/>
+	</http:request-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="4a9b7c76-9403-4395-abb5-4abfcb719033" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Teku1221" database="db" />
+	</db:config>
+	<flow name="activemqFlow" doc:id="d0641463-41fe-41cd-ad3d-a30df2e8601f" >
+		<http:listener doc:name="Listener" doc:id="e50c1387-a94d-4829-8705-1004610d6502" path="/error" config-ref="HTTP_Listener_config"/>
+		<try doc:name="Try" doc:id="ec200c47-72e4-4663-b7ef-6aadceea0ad3" >
+			<http:request method="GET" doc:name="Request" doc:id="aab5e0e2-0e69-4a9c-a811-4f285825a5fa" config-ref="HTTP_Request_configuration" path="/ws" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="571149b7-58ea-416f-bf97-366dd0669409" >
+					<set-payload value="#[error.description]" doc:name="Set Payload" doc:id="5f571f33-18a6-400d-8aa7-d536ba81e0bc" />
+					<jms:publish doc:name="Publish" doc:id="46154ac5-41c4-4255-869b-2038c38030a2" config-ref="JMS_Config" destination="Httpq"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</flow>
+	<flow name="activemqFlow1" doc:id="2fa3d1f2-1f18-41ba-8d8e-b64bb9365f91" >
+		<http:listener doc:name="Listener" doc:id="72e512ba-d2f1-4c27-9717-49829e557519" config-ref="HTTP_Listener_config" path="/ws"/>
+		<try doc:name="Try" doc:id="42b64460-5228-40cb-85e6-b871d5452f0e" >
+			<db:select doc:name="Select" doc:id="b58febf0-7c39-425d-80e4-11704674e840" config-ref="Database_Config">
+			<db:sql>select * from insertpropp where id = 3000</db:sql>
+		</db:select>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="Copy_of_On Error Continue" doc:id="13803ce1-fec5-431e-b611-e248a775d07f" >
+					<set-payload value="#[error.description]" doc:name="Copy_of_Set Payload" doc:id="007e51a4-2c38-4dfe-8af1-807ecee6e19f" />
+					<jms:publish doc:name="Copy_of_Publish" doc:id="0e61e617-8e41-4d95-b922-664b377f1469" config-ref="JMS_Config" destination="Dbq" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<set-payload value="#[output application/json --- payload]" doc:name="Set Payload" doc:id="e82235a4-ebf4-484a-bd58-bc7331683044" />
+	</flow>
+</mule>
